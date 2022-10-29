@@ -444,4 +444,8 @@ public class CommonNavigator extends FrameLayout implements IPagerNavigator, Nav
     public void setScrollToVisibleOffset(int offset) {
         mScrollToVisibleOffset = offset;
     }
+
+    public int getScrollToVisibleOffset() {
+        return mScrollToVisibleOffset;
+    }
 }
