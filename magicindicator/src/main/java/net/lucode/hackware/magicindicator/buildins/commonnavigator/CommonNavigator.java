@@ -22,6 +22,8 @@ import net.lucode.hackware.magicindicator.buildins.commonnavigator.model.Positio
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.core.math.MathUtils;
+
 /**
  * 通用的ViewPager指示器，包含PagerTitle和PagerIndicator
  * 博客: http://hackware.lucode.net
@@ -50,6 +52,7 @@ public class CommonNavigator extends FrameLayout implements IPagerNavigator, Nav
     private boolean mIndicatorOnTop;    // 指示器是否在title上层，默认为下层
     private boolean mSkimOver;  // 跨多页切换时，中间页是否显示 "掠过" 效果
     private boolean mReselectWhenLayout = true; // PositionData准备好时，是否重新选中当前页，为true可保证在极端情况下指示器状态正确
+    private int mScrollToVisibleOffset = 0;  //当某一个页面被选中时, 将当前页面 + 往滑动方向偏移 offset 的页面滑动到可见位置, 默认为 0, 即不偏移
     /****************************************************/
 
     // 保存每个title的位置信息，为扩展indicator提供保障
@@ -341,8 +344,23 @@ public class CommonNavigator extends FrameLayout implements IPagerNavigator, Nav
             ((IPagerTitleView) v).onSelected(index, totalCount);
         }
         if (!mAdjustMode && !mFollowTouch && mScrollView != null && mPositionDataList.size() > 0) {
-            int currentIndex = Math.min(mPositionDataList.size() - 1, index);
-            PositionData current = mPositionDataList.get(currentIndex);
+
+            //当某一个页面被选中时, 将当前页面 + 往滑动方向偏移 offset 的页面滑动到可见位置
+            int lastIndex = mNavigatorHelper.getLastIndex();
+            int scrollToVisibleIndex;
+            if (index > lastIndex) {
+                scrollToVisibleIndex = index + mScrollToVisibleOffset;
+            } else if (index < lastIndex) {
+                scrollToVisibleIndex = index - mScrollToVisibleOffset;
+            } else {
+                scrollToVisibleIndex = index;
+            }
+            scrollToVisibleIndex = MathUtils.clamp(scrollToVisibleIndex, 0, mPositionDataList.size() - 1);
+            PositionData current = mPositionDataList.get(scrollToVisibleIndex);
+
+            //int currentIndex = Math.min(mPositionDataList.size() - 1, index);
+            //PositionData current = mPositionDataList.get(currentIndex);
+
             if (mEnablePivotScroll) {
                 float scrollTo = current.horizontalCenter() - mScrollView.getWidth() * mScrollPivotX;
                 if (mSmoothScroll) {
@@ -421,5 +439,9 @@ public class CommonNavigator extends FrameLayout implements IPagerNavigator, Nav
 
     public void setReselectWhenLayout(boolean reselectWhenLayout) {
         mReselectWhenLayout = reselectWhenLayout;
+    }
+
+    public void setScrollToVisibleOffset(int offset) {
+        mScrollToVisibleOffset = offset;
     }
 }

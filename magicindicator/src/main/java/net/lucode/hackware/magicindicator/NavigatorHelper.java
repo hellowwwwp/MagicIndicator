@@ -154,6 +154,10 @@ public class NavigatorHelper {
         return mCurrentIndex;
     }
 
+    public int getLastIndex() {
+        return mLastIndex;
+    }
+
     public int getScrollState() {
         return mScrollState;
     }
